@@ -162,6 +162,30 @@ test("creates a project with its first next action", async ({ page }) => {
   await expect(projectCard.locator("span.badge.neutral", { hasText: "on hold" })).toBeVisible();
 });
 
+test("projects page keeps nested task cards readable in the desktop grid", async ({ page }) => {
+  await page.setViewportSize({ width: 1600, height: 900 });
+  await page.goto("/projects");
+
+  for (const title of ["Tune investment workflow", "Prepare annual insurance review", "Refresh home office setup"]) {
+    await page.getByTestId("project-title").fill(title);
+    await page.getByTestId("project-outcome").fill(`${title} has a clear outcome and next checkpoint.`);
+    await page.getByTestId("project-next-action").fill(`Write the next concrete action for ${title}`);
+    await page.getByTestId("create-project").click();
+  }
+
+  const taskCard = page.getByTestId("task-card-task-draft-memo-outline");
+  await taskCard.getByRole("button", { name: "Edit details" }).click();
+  await expect(page.getByRole("complementary", { name: "Task details" })).toBeVisible();
+
+  const taskBody = taskCard.locator(".task-body");
+  const taskBodyBox = await taskBody.boundingBox();
+  expect(taskBodyBox).not.toBeNull();
+  expect(taskBodyBox!.width).toBeGreaterThanOrEqual(180);
+
+  const overflow = await page.evaluate(() => document.documentElement.scrollWidth - window.innerWidth);
+  expect(overflow).toBeLessThanOrEqual(1);
+});
+
 test("weekly review surfaces checklist and project health", async ({ page }) => {
   await page.goto("/reviews/weekly");
 

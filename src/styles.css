@@ -1497,7 +1497,7 @@ label {
 .project-grid {
   display: grid;
   gap: 0.75rem;
-  grid-template-columns: repeat(auto-fit, minmax(270px, 1fr));
+  grid-template-columns: repeat(auto-fit, minmax(min(100%, 390px), 1fr));
 }
 
 .project-card {
@@ -1507,6 +1507,7 @@ label {
   box-shadow: var(--shadow-card);
   display: grid;
   gap: 0.7rem;
+  min-width: 0;
   padding: 0.9rem;
   transition:
     border-color 140ms ease,
@@ -1522,6 +1523,11 @@ label {
 
 .project-card h3 {
   margin-top: 0.35rem;
+  overflow-wrap: anywhere;
+}
+
+.project-card-header > div {
+  min-width: 0;
 }
 
 .project-edit-grid {
