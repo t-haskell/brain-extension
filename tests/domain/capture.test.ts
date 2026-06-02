@@ -20,7 +20,7 @@ describe("quick capture parsing", () => {
       areaId: "work",
       status: "scheduled"
     });
-    expect(draft.dueAt?.toISOString()).toBe("2026-04-30T13:00:00.000Z");
+    expect(draft.dueAt).toEqual(new Date(2026, 3, 30, 9));
   });
 
   test("routes not-now ideas into incubator with a review date", () => {
