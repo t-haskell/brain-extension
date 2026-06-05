@@ -2,9 +2,11 @@ import { endOfDay, isBefore, isEqual } from "date-fns";
 import { Section } from "../components/Section";
 import { TaskCard } from "../components/TaskCard";
 import { useBrain } from "../store/BrainStore";
+import { useSettings } from "../store/SettingsStore";
 
 export function WaitingView() {
   const { snapshot, selectTask, completeTask, setFocusTask, updateTask, selectedTask } = useBrain();
+  const { settings } = useSettings();
   const waiting = snapshot.tasks.filter((task) => task.status === "waiting");
   const todayEnd = endOfDay(new Date());
   const due = waiting.filter((task) => {
@@ -39,6 +41,7 @@ export function WaitingView() {
               task={task}
               project={task.projectId ? projectById.get(task.projectId) : undefined}
               selected={selectedTask?.id === task.id}
+              timeZone={settings.timeZone}
               onOpen={() => selectTask(task.id)}
               onComplete={() => completeTask(task.id)}
               onFocus={() => setFocusTask(task.id)}
@@ -55,6 +58,7 @@ export function WaitingView() {
               task={task}
               project={task.projectId ? projectById.get(task.projectId) : undefined}
               selected={selectedTask?.id === task.id}
+              timeZone={settings.timeZone}
               onOpen={() => selectTask(task.id)}
               onComplete={() => completeTask(task.id)}
               onFocus={() => setFocusTask(task.id)}

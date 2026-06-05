@@ -1,11 +1,17 @@
 import { fireEvent, render, screen } from "@testing-library/react";
 import { beforeEach, describe, expect, test, vi } from "vitest";
 import { DetailPane } from "../../src/components/DetailPane";
+import { DEFAULT_APP_SETTINGS } from "../../src/domain/settings";
 import { createTask } from "../../src/domain/rules";
 import { useBrain } from "../../src/store/BrainStore";
+import { useSettings } from "../../src/store/SettingsStore";
 
 vi.mock("../../src/store/BrainStore", () => ({
   useBrain: vi.fn()
+}));
+
+vi.mock("../../src/store/SettingsStore", () => ({
+  useSettings: vi.fn()
 }));
 
 const taskOne = {
@@ -24,6 +30,11 @@ describe("DetailPane", () => {
   beforeEach(() => {
     vi.clearAllMocks();
     updateTask.mockResolvedValue(undefined);
+    vi.mocked(useSettings).mockReturnValue({
+      settings: DEFAULT_APP_SETTINGS,
+      isLoaded: true,
+      updateSettings: vi.fn()
+    });
   });
 
   test("keeps dirty edits when the user cancels switching tasks", () => {

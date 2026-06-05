@@ -3,6 +3,7 @@ import { useEffect, useMemo, useRef, useState } from "react";
 import type { AreaId, Energy, Task, TaskKind, TaskStatus } from "../domain/types";
 import { formatDateTimeInput, parseDateTimeInput } from "../ui/date";
 import { useBrain } from "../store/BrainStore";
+import { useSettings } from "../store/SettingsStore";
 import { AreaBadge, StatusBadge } from "./Badge";
 import { DateTimeField } from "./DateTimeField";
 
@@ -10,7 +11,7 @@ const statuses: TaskStatus[] = ["inbox", "next", "active", "waiting", "scheduled
 const kinds: TaskKind[] = ["task", "reminder", "reference"];
 const energies: Array<Energy | ""> = ["", "low", "medium", "high"];
 
-function formFromTask(task: Task) {
+function formFromTask(task: Task, timeZone: string) {
   return {
     title: task.title,
     notes: task.notes,
@@ -18,9 +19,9 @@ function formFromTask(task: Task) {
     projectId: task.projectId ?? "",
     status: task.status,
     kind: task.kind,
-    dueAt: formatDateTimeInput(task.dueAt),
-    deferUntil: formatDateTimeInput(task.deferUntil),
-    reviewAt: formatDateTimeInput(task.reviewAt),
+    dueAt: formatDateTimeInput(task.dueAt, timeZone),
+    deferUntil: formatDateTimeInput(task.deferUntil, timeZone),
+    reviewAt: formatDateTimeInput(task.reviewAt, timeZone),
     recurrenceRule: task.recurrenceRule ?? "",
     focus: task.focus,
     energy: task.energy ?? "",
@@ -37,19 +38,20 @@ function formsEqual(left: ReturnType<typeof formFromTask>, right: ReturnType<typ
 
 export function DetailPane() {
   const { selectedTask, selectTask, updateTask, snapshot } = useBrain();
-  const [form, setForm] = useState(selectedTask ? formFromTask(selectedTask) : null);
+  const { settings } = useSettings();
+  const [form, setForm] = useState(selectedTask ? formFromTask(selectedTask, settings.timeZone) : null);
   const lastTaskRef = useRef<Task | null>(selectedTask);
 
   useEffect(() => {
     const previousTask = lastTaskRef.current;
 
     if (previousTask?.id === selectedTask?.id) {
-      setForm(selectedTask ? formFromTask(selectedTask) : null);
+      setForm(selectedTask ? formFromTask(selectedTask, settings.timeZone) : null);
       lastTaskRef.current = selectedTask;
       return;
     }
 
-    if (previousTask && form && !formsEqual(form, formFromTask(previousTask))) {
+    if (previousTask && form && !formsEqual(form, formFromTask(previousTask, settings.timeZone))) {
       const discard = window.confirm("Discard unsaved detail changes?");
       if (!discard) {
         selectTask(previousTask.id);
@@ -57,9 +59,9 @@ export function DetailPane() {
       }
     }
 
-    setForm(selectedTask ? formFromTask(selectedTask) : null);
+    setForm(selectedTask ? formFromTask(selectedTask, settings.timeZone) : null);
     lastTaskRef.current = selectedTask;
-  }, [selectTask, selectedTask]);
+  }, [selectTask, selectedTask, settings.timeZone]);
 
   const projectOptions = useMemo(
     () => snapshot.projects.filter((project) => project.status === "active" || project.status === "on_hold"),
@@ -87,9 +89,9 @@ export function DetailPane() {
       projectId: form.projectId || null,
       status: form.status as TaskStatus,
       kind: form.kind as TaskKind,
-      dueAt: parseDateTimeInput(form.dueAt),
-      deferUntil: parseDateTimeInput(form.deferUntil),
-      reviewAt: parseDateTimeInput(form.reviewAt),
+      dueAt: parseDateTimeInput(form.dueAt, settings.timeZone),
+      deferUntil: parseDateTimeInput(form.deferUntil, settings.timeZone),
+      reviewAt: parseDateTimeInput(form.reviewAt, settings.timeZone),
       recurrenceRule: form.recurrenceRule.trim() || null,
       focus: form.focus,
       energy: form.energy ? (form.energy as Energy) : null,
@@ -175,13 +177,27 @@ export function DetailPane() {
       <section className="detail-section" aria-label="Dates and resurfacing">
         <h3>Dates</h3>
         <div className="date-field-stack">
-          <DateTimeField label="Due date" value={form.dueAt} onChange={(dueAt) => setForm({ ...form, dueAt })} />
+          <DateTimeField
+            label="Due date"
+            value={form.dueAt}
+            timeZone={settings.timeZone}
+            defaultTime={settings.defaultDueTime}
+            onChange={(dueAt) => setForm({ ...form, dueAt })}
+          />
           <DateTimeField
             label="Review / follow-up"
             value={form.reviewAt}
+            timeZone={settings.timeZone}
+            defaultTime={settings.defaultDueTime}
             onChange={(reviewAt) => setForm({ ...form, reviewAt })}
           />
-          <DateTimeField label="Defer until date" value={form.deferUntil} onChange={(deferUntil) => setForm({ ...form, deferUntil })} />
+          <DateTimeField
+            label="Defer until date"
+            value={form.deferUntil}
+            timeZone={settings.timeZone}
+            defaultTime={settings.defaultDueTime}
+            onChange={(deferUntil) => setForm({ ...form, deferUntil })}
+          />
         </div>
         <label>
           Recurrence

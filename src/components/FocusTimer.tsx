@@ -4,6 +4,7 @@ import type { Task } from "../domain/types";
 
 interface FocusTimerProps {
   focusTask: Task | null;
+  defaultDurationMinutes?: number;
   onClose(): void;
   onChooseFocus(): void;
 }
@@ -18,9 +19,9 @@ function formatRemaining(seconds: number) {
   return `${minutes}:${rest}`;
 }
 
-export function FocusTimer({ focusTask, onClose, onChooseFocus }: FocusTimerProps) {
-  const [durationMinutes, setDurationMinutes] = useState(25);
-  const [remainingSeconds, setRemainingSeconds] = useState(25 * 60);
+export function FocusTimer({ focusTask, defaultDurationMinutes = 25, onClose, onChooseFocus }: FocusTimerProps) {
+  const [durationMinutes, setDurationMinutes] = useState(defaultDurationMinutes);
+  const [remainingSeconds, setRemainingSeconds] = useState(defaultDurationMinutes * 60);
   const [running, setRunning] = useState(false);
   const closeButtonRef = useRef<HTMLButtonElement>(null);
 

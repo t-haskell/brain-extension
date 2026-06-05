@@ -50,6 +50,16 @@ describe("domain rules", () => {
     });
   });
 
+  test("supports a custom active work limit", () => {
+    const tasks = ["a", "b", "c", "d"].map((title) => createTask({ title, status: "active" }, now));
+
+    expect(getWipState(tasks, 5)).toMatchObject({
+      activeCount: 4,
+      limit: 5,
+      isOverLimit: false
+    });
+  });
+
   test("only one focus task can exist at a time", () => {
     const tasks = [
       createTask({ title: "One", status: "active", focus: true }, now),

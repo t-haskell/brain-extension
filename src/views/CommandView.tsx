@@ -4,17 +4,19 @@ import { Link } from "react-router-dom";
 import { getWipState, isOpenTask } from "../domain/rules";
 import { getCommandSections } from "../domain/selectors";
 import { useBrain } from "../store/BrainStore";
+import { useSettings } from "../store/SettingsStore";
 import { FocusTimer } from "../components/FocusTimer";
 import { Section } from "../components/Section";
 import { TaskCard } from "../components/TaskCard";
 
 export function CommandView() {
   const { snapshot, selectTask, completeTask, setFocusTask, updateTask, selectedTask } = useBrain();
+  const { settings } = useSettings();
   const [timerOpen, setTimerOpen] = useState(false);
   const sections = getCommandSections(snapshot, new Date());
   const projectById = new Map(snapshot.projects.map((project) => [project.id, project]));
   const openTasks = snapshot.tasks.filter(isOpenTask);
-  const wip = getWipState(snapshot.tasks);
+  const wip = getWipState(snapshot.tasks, settings.activeWorkLimit);
   const sectionCount = new Map(sections.map((section) => [section.id, section.items.length]));
   const focusTitle = wip.focusTask?.title ?? "No focus selected";
   const activeWorkCount = openTasks.filter((task) => task.status === "active").length;
@@ -68,7 +70,7 @@ export function CommandView() {
           <strong>
             {wip.activeCount}/{wip.limit} active
           </strong>
-          <span className="capacity-bars" aria-hidden="true">
+          <span className="capacity-bars" aria-hidden="true" style={{ gridTemplateColumns: `repeat(${wip.limit}, minmax(0, 1fr))` }}>
             {Array.from({ length: wip.limit }).map((_, index) => (
               <span key={index} className={index < wip.activeCount ? "filled" : ""} />
             ))}
@@ -127,6 +129,7 @@ export function CommandView() {
       {timerOpen ? (
         <FocusTimer
           focusTask={wip.focusTask}
+          defaultDurationMinutes={settings.focusTimerMinutes}
           onClose={() => setTimerOpen(false)}
           onChooseFocus={() => {
             setTimerOpen(false);
@@ -180,6 +183,7 @@ export function CommandView() {
                       task={task}
                       project={task.projectId ? projectById.get(task.projectId) : undefined}
                       selected={selectedTask?.id === task.id}
+                      timeZone={settings.timeZone}
                       onOpen={() => selectTask(task.id)}
                       onComplete={() => completeTask(task.id)}
                       onFocus={() => setFocusTask(task.id)}

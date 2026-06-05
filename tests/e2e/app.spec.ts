@@ -1,6 +1,29 @@
-import { expect, test } from "@playwright/test";
+import { expect, test, type Page } from "@playwright/test";
+
+async function resetSettings(page: Page) {
+  await page.goto("/settings");
+  await page.evaluate(async () => {
+    const db = await new Promise<IDBDatabase>((resolve, reject) => {
+      const request = indexedDB.open("local-first-command");
+      request.addEventListener("success", () => resolve(request.result));
+      request.addEventListener("error", () => reject(request.error));
+    });
+
+    if (db.objectStoreNames.contains("appSettings")) {
+      await new Promise<void>((resolve, reject) => {
+        const transaction = db.transaction("appSettings", "readwrite");
+        transaction.objectStore("appSettings").delete("app-settings");
+        transaction.addEventListener("complete", () => resolve());
+        transaction.addEventListener("error", () => reject(transaction.error));
+      });
+    }
+
+    db.close();
+  });
+}
 
 test.beforeEach(async ({ page }) => {
+  await resetSettings(page);
   await page.goto("/explorer");
   await page.getByTestId("reset-demo").click();
   await page.getByRole("button", { name: "Confirm reset" }).click();
@@ -58,7 +81,7 @@ test("three-dot task menu exposes workflow actions", async ({ page }) => {
 test("command summary cards and WIP meter are clickable", async ({ page }) => {
   await page.goto("/");
 
-  await expect(page.getByTestId("cloud-account-chip")).toContainText("Local only");
+  await expect(page.getByTestId("cloud-account-chip")).toBeVisible();
   await page.locator(".attention-signal").click();
   await expect(page).toHaveURL(/#lane-waiting-due/);
 
@@ -124,7 +147,7 @@ test("detail date controls expose click-friendly presets without overflowing", a
 });
 
 test("focus console opens a usable focus timer", async ({ page }) => {
-  await page.goto("/");
+  await page.goto("/command");
 
   const taskCard = page.getByTestId("task-card-task-draft-memo-outline");
   await taskCard.getByRole("button", { name: "Set focus" }).click();
@@ -141,6 +164,35 @@ test("focus console opens a usable focus timer", async ({ page }) => {
   await expect(dialog.getByText("15:00")).toBeVisible();
   await dialog.getByRole("button", { name: "Start" }).click();
   await expect(dialog.getByRole("button", { name: "Pause" })).toBeVisible();
+});
+
+test("settings update workflow defaults and persist after reload", async ({ page }) => {
+  await page.goto("/settings");
+
+  await expect(page.getByRole("heading", { name: "Settings" })).toBeVisible();
+  await expect(page.getByRole("link", { name: /Settings/ })).toBeVisible();
+
+  await page.getByTestId("active-work-limit").selectOption("5");
+  await page.getByTestId("focus-timer-minutes").selectOption("45");
+  await page.getByTestId("start-page-path").selectOption("/inbox");
+
+  await expect(page.getByTestId("wip-meter")).toContainText("Active 0/5");
+
+  await page.reload();
+  await expect(page.getByTestId("active-work-limit")).toHaveValue("5");
+  await expect(page.getByTestId("focus-timer-minutes")).toHaveValue("45");
+  await expect(page.getByTestId("start-page-path")).toHaveValue("/inbox");
+
+  await page.goto("/command");
+  await expect(page.getByTestId("wip-meter")).toContainText("Active 0/5");
+
+  const taskCard = page.getByTestId("task-card-task-draft-memo-outline");
+  await taskCard.getByRole("button", { name: "Set focus" }).click();
+  await page.getByRole("button", { name: "Open focus timer" }).click();
+  await expect(page.getByRole("dialog", { name: "Focus timer" }).getByText("45:00")).toBeVisible();
+
+  await page.goto("/");
+  await expect(page).toHaveURL(/\/inbox$/);
 });
 
 test("creates a project with its first next action", async ({ page }) => {
@@ -258,6 +310,9 @@ test("mobile viewport supports core navigation without horizontal overflow", asy
   await page.goto("/explorer");
   await expect(page.getByLabel("Search text")).toBeVisible();
   await expect(page.getByRole("button", { name: "Import" })).toBeDisabled();
+
+  await page.goto("/settings");
+  await expect(page.getByRole("heading", { name: "Settings" })).toBeVisible();
 
   const overflow = await page.evaluate(() => document.documentElement.scrollWidth - window.innerWidth);
   expect(overflow).toBeLessThanOrEqual(1);

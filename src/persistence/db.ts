@@ -1,6 +1,7 @@
 import Dexie, { type Table } from "dexie";
 import dexieCloud from "dexie-cloud-addon";
 import "dexie-cloud-addon";
+import type { AppSettingsRow } from "../domain/settings";
 import type { Area, AreaId, BrainSnapshot, Project, Task } from "../domain/types";
 import { createDemoSnapshot } from "../domain/seed";
 
@@ -14,6 +15,7 @@ class CommandDb extends Dexie {
   projects!: Table<Project, string>;
   tasks!: Table<Task, string>;
   meta!: Table<MetaRow, string>;
+  appSettings!: Table<AppSettingsRow, string>;
 
   constructor() {
     super("local-first-command", { addons: [dexieCloud] });
@@ -23,6 +25,14 @@ class CommandDb extends Dexie {
       projects: "id, areaId, status, reviewAt",
       tasks: "id, areaId, projectId, status, dueAt, reviewAt, focus, updatedAt",
       meta: "key"
+    });
+
+    this.version(2).stores({
+      areas: "id, archived",
+      projects: "id, areaId, status, reviewAt",
+      tasks: "id, areaId, projectId, status, dueAt, reviewAt, focus, updatedAt",
+      meta: "key",
+      appSettings: "id, updatedAt"
     });
   }
 }

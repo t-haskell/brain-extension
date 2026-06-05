@@ -7,19 +7,21 @@ import {
   Hourglass,
   Inbox,
   LayoutDashboard,
-  Search
+  Search,
+  SlidersHorizontal
 } from "lucide-react";
 import { NavLink, Outlet } from "react-router-dom";
 import { useNavigate } from "react-router-dom";
 import { getWipState, isOpenTask } from "../domain/rules";
 import { getCommandSections } from "../domain/selectors";
 import { useBrain } from "../store/BrainStore";
+import { useSettings } from "../store/SettingsStore";
 import { CloudAccountChip } from "./CloudAccountChip";
 import { DetailPane } from "./DetailPane";
 import { QuickCapture } from "./QuickCapture";
 
 const navItems = [
-  { to: "/", label: "Command", icon: LayoutDashboard },
+  { to: "/command", label: "Command", icon: LayoutDashboard },
   { to: "/inbox", label: "Inbox", icon: Inbox },
   { to: "/work", label: "Work", icon: Briefcase },
   { to: "/personal", label: "Personal", icon: Home },
@@ -27,13 +29,15 @@ const navItems = [
   { to: "/incubator", label: "Incubator", icon: Archive },
   { to: "/projects", label: "Projects", icon: FolderKanban },
   { to: "/reviews/weekly", label: "Weekly Review", icon: CalendarCheck },
-  { to: "/explorer", label: "Explorer", icon: Search }
+  { to: "/explorer", label: "Explorer", icon: Search },
+  { to: "/settings", label: "Settings", icon: SlidersHorizontal }
 ];
 
 export function Layout() {
   const { snapshot, isLoaded } = useBrain();
+  const { settings } = useSettings();
   const navigate = useNavigate();
-  const wip = getWipState(snapshot.tasks);
+  const wip = getWipState(snapshot.tasks, settings.activeWorkLimit);
   const openTasks = snapshot.tasks.filter(isOpenTask);
   const commandSections = getCommandSections(snapshot, new Date());
   const navCounts = new Map<string, number>([
@@ -43,11 +47,11 @@ export function Layout() {
     ["/waiting", openTasks.filter((task) => task.status === "waiting").length],
     ["/incubator", openTasks.filter((task) => task.status === "incubator").length],
     ["/projects", snapshot.projects.filter((project) => project.status === "active").length],
-    ["/", commandSections.reduce((total, section) => total + section.items.length, 0)]
+    ["/command", commandSections.reduce((total, section) => total + section.items.length, 0)]
   ]);
 
   function openCapacity() {
-    navigate("/");
+    navigate("/command");
     window.setTimeout(() => {
       const target = document.getElementById("lane-active-work") ?? document.querySelector(".signal-grid");
       target?.scrollIntoView({ behavior: "smooth", block: "start" });
@@ -71,7 +75,7 @@ export function Layout() {
         </div>
         <nav aria-label="Primary">
           {navItems.map(({ to, label, icon: Icon }) => (
-            <NavLink key={to} to={to} end={to === "/"}>
+            <NavLink key={to} to={to} end={to === "/command"}>
               <Icon size={17} aria-hidden="true" />
               <span className="nav-label">{label}</span>
               {navCounts.get(to) ? <span className="nav-count">{navCounts.get(to)}</span> : null}

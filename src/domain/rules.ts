@@ -54,14 +54,14 @@ export function getProjectHealth(project: Project, tasks: Task[]) {
   };
 }
 
-export function getWipState(tasks: Task[]) {
+export function getWipState(tasks: Task[], limit = ACTIVE_LIMIT) {
   const activeTasks = tasks.filter((task) => task.status === "active" && isOpenTask(task));
   const focusTask = activeTasks.find((task) => task.focus) ?? null;
 
   return {
     activeCount: activeTasks.length,
-    limit: ACTIVE_LIMIT,
-    isOverLimit: activeTasks.length > ACTIVE_LIMIT,
+    limit,
+    isOverLimit: activeTasks.length > limit,
     focusTask
   };
 }

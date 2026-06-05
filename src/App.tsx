@@ -7,13 +7,26 @@ import { InboxView } from "./views/InboxView";
 import { IncubatorView } from "./views/IncubatorView";
 import { ProjectsView } from "./views/ProjectsView";
 import { MonthlyIncubatorReviewView, WeeklyReviewView } from "./views/ReviewsView";
+import { SettingsView } from "./views/SettingsView";
 import { WaitingView } from "./views/WaitingView";
+import { useSettings } from "./store/SettingsStore";
+
+function StartPageRedirect() {
+  const { settings, isLoaded } = useSettings();
+
+  if (!isLoaded) {
+    return null;
+  }
+
+  return <Navigate to={settings.startPagePath} replace />;
+}
 
 export function App() {
   return (
     <Routes>
       <Route element={<Layout />}>
-        <Route path="/" element={<CommandView />} />
+        <Route path="/" element={<StartPageRedirect />} />
+        <Route path="/command" element={<CommandView />} />
         <Route path="/inbox" element={<InboxView />} />
         <Route path="/work" element={<AreaView areaId="work" />} />
         <Route path="/personal" element={<AreaView areaId="personal" />} />
@@ -23,6 +36,7 @@ export function App() {
         <Route path="/reviews/weekly" element={<WeeklyReviewView />} />
         <Route path="/reviews/incubator" element={<MonthlyIncubatorReviewView />} />
         <Route path="/explorer" element={<ExplorerView />} />
+        <Route path="/settings" element={<SettingsView />} />
         <Route path="*" element={<Navigate to="/" replace />} />
       </Route>
     </Routes>

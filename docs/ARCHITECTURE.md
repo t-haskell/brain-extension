@@ -35,6 +35,7 @@ The important boundary is `BrainStore`. UI components should call `useBrain()` a
 - `capture.ts`: natural-language quick capture parsing.
 - `recurrence.ts`: recurring task expansion.
 - `export.ts`: JSON and CSV import/export.
+- `settings.ts`: settings defaults, allowed values, and field-by-field normalization.
 
 When changing behavior, prefer adding or updating a domain test first.
 
@@ -43,14 +44,16 @@ When changing behavior, prefer adding or updating a domain test first.
 `src/persistence/db.ts` owns Dexie:
 
 - Database name: `local-first-command`.
-- Tables: `areas`, `projects`, `tasks`, `meta`.
+- Tables: `areas`, `projects`, `tasks`, `meta`, `appSettings`.
 - `meta` is local-only and not synced to Dexie Cloud.
+- `appSettings` contains one synced row for user preferences. It is not included in JSON import/export replacement.
 - Normal app edits use row-level helpers:
   - `putTask`
   - `putTasks`
   - `putProject`
   - `putProjectWithTasks`
   - `putProjects`
+- Settings edits use `putAppSettings` and the `SettingsStore` facade.
 - Full replacement is reserved for:
   - JSON import
   - demo reset
@@ -78,6 +81,7 @@ Dexie Cloud configuration choices:
 - `nameSuffix: false`: preserves the existing IndexedDB database name for same-origin sign-in.
 - `tryUseServiceWorker: false`: the existing service worker only caches the app shell.
 - `unsyncedTables: ["meta"]`: local seed metadata does not sync.
+- `appSettings` is intentionally not listed in `unsyncedTables`, so preferences can follow the signed-in Dexie Cloud user.
 - `socialAuth: false`: v1 uses email OTP only.
 
 ## UI Layer
@@ -92,6 +96,7 @@ Key components:
 - `DetailPane`: edit selected task.
 - `CloudAccountChip`: local-only/signed-out/signed-in sync UI.
 - `FocusTimer`: optional focus session timer.
+- `SettingsView`: route-level settings page for theme, timezone, WIP limit, timer default, and start page.
 
 The app uses a right detail pane instead of editing in every card. This keeps cards scannable while still making metadata editable.
 
@@ -129,6 +134,13 @@ The service worker does not sync data and should not be used for Dexie Cloud in 
 2. Add or update tests around `mapCloudAccountState`.
 3. Avoid direct cloud calls in views; use `src/persistence/sync.ts`.
 4. Verify with a real Dexie Cloud database manually.
+
+### Change app settings
+
+1. Add allowed values and defaults in `src/domain/settings.ts`.
+2. Keep invalid persisted values falling back field-by-field.
+3. Persist through `src/persistence/settings.ts`; do not write the Dexie table directly from views.
+4. Add store tests for default loading, row-level writes, and live subscription updates.
 
 ## Testing Strategy
 

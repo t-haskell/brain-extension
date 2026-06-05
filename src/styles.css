@@ -16,15 +16,81 @@
   --incubator: #674f8f;
   --incubator-soft: #efe8f7;
   --accent: #173d39;
+  --accent-hover: #183b37;
   --accent-2: #bf5538;
   --accent-soft: #dcece3;
   --signal: #233044;
   --danger: #a63c33;
   --warning: #8a5a15;
+  --input-bg: #fffefa;
   --shadow-soft: 0 1px 2px rgba(17, 31, 30, 0.06), 0 18px 48px rgba(17, 31, 30, 0.1);
   --shadow-card: 0 1px 1px rgba(17, 31, 30, 0.05), 0 12px 28px rgba(17, 31, 30, 0.08);
   font-family:
     Inter, ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+}
+
+:root[data-theme="dark"] {
+  color-scheme: dark;
+  --bg: #111716;
+  --surface: #18211f;
+  --panel: #1c2825;
+  --panel-strong: #283633;
+  --panel-tint: #22302d;
+  --ink: #f1f6f3;
+  --muted: #a5b4af;
+  --line: #33433f;
+  --line-strong: #53635f;
+  --work-soft: #16343d;
+  --personal-soft: #3c2b1a;
+  --incubator-soft: #2e2540;
+  --accent-soft: #243d37;
+  --signal: #dbe5e2;
+  --danger: #ff8b82;
+  --warning: #e2b15b;
+  --input-bg: #14201d;
+  --shadow-soft: 0 1px 2px rgba(0, 0, 0, 0.24), 0 18px 48px rgba(0, 0, 0, 0.28);
+  --shadow-card: 0 1px 1px rgba(0, 0, 0, 0.22), 0 12px 28px rgba(0, 0, 0, 0.24);
+}
+
+:root[data-accent="blue"] {
+  --accent: #174366;
+  --accent-hover: #12334e;
+  --accent-2: #9b5d2e;
+  --accent-soft: #dbe8f4;
+  --work: #155b89;
+  --work-soft: #dceef8;
+}
+
+:root[data-accent="plum"] {
+  --accent: #4d3b73;
+  --accent-hover: #392b58;
+  --accent-2: #9b4f72;
+  --accent-soft: #e8e1f2;
+  --incubator: #674f8f;
+  --incubator-soft: #efe8f7;
+}
+
+:root[data-accent="copper"] {
+  --accent: #6d3d18;
+  --accent-hover: #523013;
+  --accent-2: #b4572e;
+  --accent-soft: #f1e2d3;
+  --personal: #93551c;
+  --personal-soft: #f5e4cf;
+}
+
+:root[data-theme="dark"][data-accent="blue"] {
+  --accent-soft: #1b3449;
+  --work-soft: #123041;
+}
+
+:root[data-theme="dark"][data-accent="plum"] {
+  --accent-soft: #302842;
+}
+
+:root[data-theme="dark"][data-accent="copper"] {
+  --accent-soft: #3a2b20;
+  --personal-soft: #382819;
 }
 
 * {
@@ -100,7 +166,7 @@ select,
 textarea {
   border: 1px solid var(--line);
   border-radius: 7px;
-  background: #fffefa;
+  background: var(--input-bg);
   color: var(--ink);
   min-height: 36px;
   padding: 0.5rem 0.6rem;
@@ -120,7 +186,7 @@ textarea:hover {
 input:focus,
 select:focus,
 textarea:focus {
-  background: #fff;
+  background: var(--panel);
   border-color: var(--accent);
   box-shadow: 0 0 0 4px rgba(33, 68, 63, 0.08);
   outline: 0;
@@ -401,8 +467,8 @@ label {
 
 .icon-button.strong:hover,
 .primary-button:hover {
-  background: #183b37;
-  border-color: #183b37;
+  background: var(--accent-hover);
+  border-color: var(--accent-hover);
 }
 
 .primary-button.full {
@@ -1449,6 +1515,67 @@ label {
   grid-template-columns: minmax(220px, 1.2fr) repeat(4, minmax(120px, 1fr));
 }
 
+.settings-view {
+  max-width: 980px;
+}
+
+.settings-grid {
+  display: grid;
+  gap: 0.8rem;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+}
+
+.settings-panel {
+  background: var(--panel);
+  border: 1px solid rgba(214, 203, 189, 0.9);
+  border-radius: 8px;
+  box-shadow: var(--shadow-card);
+  display: grid;
+  gap: 0.8rem;
+  min-width: 0;
+  padding: 0.9rem;
+}
+
+.settings-panel-wide {
+  grid-column: 1 / -1;
+}
+
+.settings-panel-heading {
+  align-items: start;
+  display: grid;
+  gap: 0.65rem;
+  grid-template-columns: auto minmax(0, 1fr);
+}
+
+.settings-panel-heading > svg {
+  background: var(--accent-soft);
+  border-radius: 7px;
+  color: var(--accent);
+  height: 34px;
+  padding: 0.45rem;
+  width: 34px;
+}
+
+.settings-panel h3,
+.settings-panel p {
+  margin: 0;
+}
+
+.settings-panel h3 {
+  font-size: 1rem;
+}
+
+.settings-panel p {
+  color: var(--muted);
+  line-height: 1.35;
+}
+
+.settings-field-grid {
+  display: grid;
+  gap: 0.65rem;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+}
+
 .inline-check {
   align-items: center;
   display: flex;
@@ -1461,6 +1588,7 @@ label {
 }
 
 .triage-bar,
+.bulk-edit-bar,
 .form-card,
 .io-panel,
 .review-checklist,
@@ -1492,6 +1620,30 @@ label {
 .triage-bar {
   align-items: end;
   grid-template-columns: auto minmax(130px, 160px) minmax(130px, 160px) auto;
+}
+
+.bulk-edit-bar {
+  align-items: end;
+  grid-template-columns: minmax(170px, 0.8fr) repeat(4, minmax(130px, 1fr)) auto;
+}
+
+.bulk-edit-summary {
+  display: grid;
+  gap: 0.35rem;
+}
+
+.bulk-edit-summary strong {
+  font-size: 0.92rem;
+}
+
+.bulk-edit-summary span {
+  color: var(--muted);
+  font-size: 0.78rem;
+}
+
+.bulk-edit-bar .primary-button {
+  justify-content: center;
+  min-width: 148px;
 }
 
 .project-grid {
@@ -1667,7 +1819,10 @@ label {
   }
 
   .triage-bar,
+  .bulk-edit-bar,
   .field-grid,
+  .settings-grid,
+  .settings-field-grid,
   .detail-field-grid,
   .date-input-grid,
   .filter-bar,

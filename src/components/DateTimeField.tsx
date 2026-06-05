@@ -1,13 +1,12 @@
-import { addDays, addWeeks, format, setHours, setMinutes, startOfDay } from "date-fns";
-import { formatDateTimeInput } from "../ui/date";
+import { getDatePresetValue } from "../ui/date";
 
 interface DateTimeFieldProps {
   label: string;
   value: string;
+  timeZone: string;
+  defaultTime: string;
   onChange(value: string): void;
 }
-
-const defaultTime = "09:00";
 
 function splitDateTime(value: string) {
   const [date = "", time = ""] = value.split("T");
@@ -17,33 +16,23 @@ function splitDateTime(value: string) {
   };
 }
 
-function combineDateTime(date: string, time: string) {
+function combineDateTime(date: string, time: string, defaultTime: string) {
   return date ? `${date}T${time || defaultTime}` : "";
 }
 
-function datePreset(daysFromToday: number) {
-  const base = startOfDay(addDays(new Date(), daysFromToday));
-  return formatDateTimeInput(setMinutes(setHours(base, 9), 0));
+function todayDate(timeZone: string, defaultTime: string) {
+  return getDatePresetValue(0, timeZone, defaultTime).slice(0, 10);
 }
 
-function nextWeekPreset() {
-  const base = startOfDay(addWeeks(new Date(), 1));
-  return formatDateTimeInput(setMinutes(setHours(base, 9), 0));
-}
-
-function todayDate() {
-  return format(new Date(), "yyyy-MM-dd");
-}
-
-export function DateTimeField({ label, value, onChange }: DateTimeFieldProps) {
+export function DateTimeField({ label, value, timeZone, defaultTime, onChange }: DateTimeFieldProps) {
   const { date, time } = splitDateTime(value);
 
   function updateDate(nextDate: string) {
-    onChange(combineDateTime(nextDate, time));
+    onChange(combineDateTime(nextDate, time, defaultTime));
   }
 
   function updateTime(nextTime: string) {
-    onChange(combineDateTime(date || todayDate(), nextTime));
+    onChange(combineDateTime(date || todayDate(timeZone, defaultTime), nextTime, defaultTime));
   }
 
   return (
@@ -60,13 +49,13 @@ export function DateTimeField({ label, value, onChange }: DateTimeFieldProps) {
         </label>
       </div>
       <div className="date-preset-row" aria-label={`${label} presets`}>
-        <button type="button" onClick={() => onChange(datePreset(0))}>
+        <button type="button" onClick={() => onChange(getDatePresetValue(0, timeZone, defaultTime))}>
           Today
         </button>
-        <button type="button" onClick={() => onChange(datePreset(1))}>
+        <button type="button" onClick={() => onChange(getDatePresetValue(1, timeZone, defaultTime))}>
           Tomorrow
         </button>
-        <button type="button" onClick={() => onChange(nextWeekPreset())}>
+        <button type="button" onClick={() => onChange(getDatePresetValue(7, timeZone, defaultTime))}>
           Next week
         </button>
         <button type="button" onClick={() => onChange("")}>

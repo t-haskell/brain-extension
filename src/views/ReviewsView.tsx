@@ -4,9 +4,11 @@ import { Section } from "../components/Section";
 import { TaskCard } from "../components/TaskCard";
 import { getMonthlyIncubatorReview, getWeeklyReview } from "../domain/selectors";
 import { useBrain } from "../store/BrainStore";
+import { useSettings } from "../store/SettingsStore";
 
 export function WeeklyReviewView() {
   const { snapshot, selectTask, completeTask, setFocusTask, updateTask, selectedTask } = useBrain();
+  const { settings } = useSettings();
   const review = getWeeklyReview(snapshot, new Date());
   const projectById = new Map(snapshot.projects.map((project) => [project.id, project]));
 
@@ -18,6 +20,7 @@ export function WeeklyReviewView() {
           task={task}
           project={task.projectId ? projectById.get(task.projectId) : undefined}
           selected={selectedTask?.id === task.id}
+          timeZone={settings.timeZone}
           onOpen={() => selectTask(task.id)}
           onComplete={() => completeTask(task.id)}
           onFocus={() => setFocusTask(task.id)}
@@ -80,6 +83,7 @@ export function WeeklyReviewView() {
 
 export function MonthlyIncubatorReviewView() {
   const { snapshot, selectTask, completeTask, setFocusTask, updateTask, createProjectFromTask, selectedTask } = useBrain();
+  const { settings } = useSettings();
   const review = getMonthlyIncubatorReview(snapshot, new Date());
 
   return (
@@ -98,6 +102,7 @@ export function MonthlyIncubatorReviewView() {
               <TaskCard
                 task={task}
                 selected={selectedTask?.id === task.id}
+                timeZone={settings.timeZone}
                 onOpen={() => selectTask(task.id)}
                 onComplete={() => completeTask(task.id)}
                 onFocus={() => setFocusTask(task.id)}

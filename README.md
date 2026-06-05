@@ -37,7 +37,7 @@ Use `Explorer` when you need the true all-items audit view.
 
 ## Active Work vs Incubator
 
-Active work is for items that are actionable now. The app enforces the method with a visible warning when more than three tasks are active, and only one task can be marked as focus.
+Active work is for items that are actionable now. The app enforces the method with a visible warning when the configured active-work limit is exceeded, and only one task can be marked as focus. The default active-work limit is three.
 
 Incubator is for ideas that matter but should not consume daily execution space. Incubator items require a review date. They resurface in Command and Monthly Incubator Review only when that review date arrives.
 
@@ -69,6 +69,8 @@ The canonical data model lives in the browser first:
 - `Explorer` can export the complete model as JSON or CSV.
 - JSON import replaces the local model intentionally.
 
+Settings are also stored in IndexedDB. The app keeps task/project import and export focused on the task model; settings are managed from `Settings` and sync through their own single settings row when Dexie Cloud is configured.
+
 Cloud sync is optional. If `VITE_DEXIE_CLOUD_DB_URL` is not set, the app runs as `Local only`. If the variable is set, Dexie Cloud is configured with Email OTP sign-in and the top-bar account chip can sign in, sync now, and sign out.
 
 ## Computer And Phone Access
@@ -91,6 +93,7 @@ Important migration note: browser storage is origin-scoped. Data created at `htt
 - `src/persistence/db.ts`: Dexie database, optional Dexie Cloud configuration, local table helpers.
 - `src/persistence/sync.ts`: Cloud account state, login/logout/sync wrappers, local-only fallback.
 - `src/store/BrainStore.tsx`: React state facade over the canonical model and persistence helpers.
+- `src/store/SettingsStore.tsx`: synced app preferences for theme, timezone, WIP limit, focus timer, and start page.
 - `src/components`: Shared UI, including task cards, detail pane, quick capture, focus timer, and cloud account chip.
 - `src/views`: Route-level workflow screens.
 - `public/sw.js`: Production service worker for app-shell and built-asset caching.
@@ -209,6 +212,7 @@ Manual cross-device acceptance after deployment:
 - Change domain behavior in `src/domain` first and add unit tests.
 - Change persistence through `src/persistence/db.ts` helpers instead of writing directly to Dexie tables from UI code.
 - Change app workflows in `BrainStore` so every view stays derived from the same model.
+- Change app preferences through `SettingsStore` and the settings persistence helper instead of writing the Dexie settings table from views.
 - Keep normal edits row-level. Use full database replacement only for JSON import and demo reset.
 - Keep hosted/cloud behavior optional. The app must still work when `VITE_DEXIE_CLOUD_DB_URL` is empty.
 
@@ -228,5 +232,6 @@ Current coverage includes:
 - Basic accessibility behavior for collapsible sections, dialogs, and capture announcements.
 - Cloud account state and top-bar account UI.
 - Cloud sync actions that pull after login and push/pull on manual sync.
-- Playwright flows for capture, triage, menus, details, focus timer, projects, reviews, export controls, local-only cloud status, and mobile navigation.
+- Synced settings defaults, normalization, persistence, theme attributes, WIP limit, timer defaults, and start-page routing.
+- Playwright flows for capture, triage, menus, details, focus timer, settings, projects, reviews, export controls, local-only cloud status, and mobile navigation.
 - Production offline smoke for first-load service-worker caching and offline reload.

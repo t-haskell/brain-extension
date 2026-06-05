@@ -4,9 +4,11 @@ import type { AreaId } from "../domain/types";
 import { Section } from "../components/Section";
 import { TaskCard } from "../components/TaskCard";
 import { useBrain } from "../store/BrainStore";
+import { useSettings } from "../store/SettingsStore";
 
 export function AreaView({ areaId }: { areaId: AreaId }) {
   const { snapshot, selectTask, completeTask, setFocusTask, updateTask, selectedTask } = useBrain();
+  const { settings } = useSettings();
   const label = areaId === "work" ? "Work" : "Personal";
   const projects = snapshot.projects.filter((project) => project.areaId === areaId && project.status === "active");
   const tasks = snapshot.tasks.filter((task) => task.areaId === areaId && task.status !== "done" && task.status !== "canceled");
@@ -53,6 +55,7 @@ export function AreaView({ areaId }: { areaId: AreaId }) {
                 task={task}
                 project={task.projectId ? projectById.get(task.projectId) : undefined}
                 selected={selectedTask?.id === task.id}
+                timeZone={settings.timeZone}
                 onOpen={() => selectTask(task.id)}
                 onComplete={() => completeTask(task.id)}
                 onFocus={() => setFocusTask(task.id)}

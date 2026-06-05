@@ -11,6 +11,7 @@ interface TaskCardProps {
   selected?: boolean;
   selectable?: boolean;
   checked?: boolean;
+  timeZone?: string;
   onCheckedChange?: (checked: boolean) => void;
   onOpen(task: Task): void;
   onComplete(task: Task): void;
@@ -24,6 +25,7 @@ export function TaskCard({
   selected,
   selectable,
   checked,
+  timeZone,
   onCheckedChange,
   onOpen,
   onComplete,
@@ -31,7 +33,7 @@ export function TaskCard({
   onStatus
 }: TaskCardProps) {
   const warnings = getRuleWarnings(task);
-  const dateLabel = formatDate(task.dueAt ?? task.reviewAt ?? task.deferUntil);
+  const dateLabel = formatDate(task.dueAt ?? task.reviewAt ?? task.deferUntil, timeZone);
   const [menuOpen, setMenuOpen] = useState(false);
   const menuRef = useRef<HTMLDivElement>(null);
 

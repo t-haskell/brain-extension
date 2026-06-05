@@ -1,12 +1,14 @@
 import { useMemo, useState } from "react";
 import type { AreaId, TaskStatus } from "../domain/types";
 import { useBrain } from "../store/BrainStore";
+import { useSettings } from "../store/SettingsStore";
 import { TaskCard } from "../components/TaskCard";
 
 const statuses: TaskStatus[] = ["next", "active", "waiting", "scheduled", "incubator", "done", "canceled"];
 
 export function InboxView() {
   const { snapshot, selectTask, completeTask, setFocusTask, updateTask, bulkUpdateTasks, selectedTask } = useBrain();
+  const { settings } = useSettings();
   const inboxTasks = useMemo(() => snapshot.tasks.filter((task) => task.status === "inbox"), [snapshot.tasks]);
   const [selectedIds, setSelectedIds] = useState<string[]>([]);
   const [areaId, setAreaId] = useState<AreaId>("personal");
@@ -64,6 +66,7 @@ export function InboxView() {
               selected={selectedTask?.id === task.id}
               selectable
               checked={selectedIds.includes(task.id)}
+              timeZone={settings.timeZone}
               onCheckedChange={(checked) => toggleTask(task.id, checked)}
               onOpen={() => selectTask(task.id)}
               onComplete={() => completeTask(task.id)}

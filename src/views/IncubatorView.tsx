@@ -3,9 +3,11 @@ import { getMonthlyIncubatorReview } from "../domain/selectors";
 import { Section } from "../components/Section";
 import { TaskCard } from "../components/TaskCard";
 import { useBrain } from "../store/BrainStore";
+import { useSettings } from "../store/SettingsStore";
 
 export function IncubatorView() {
   const { snapshot, selectTask, completeTask, setFocusTask, updateTask, createProjectFromTask, selectedTask } = useBrain();
+  const { settings } = useSettings();
   const review = getMonthlyIncubatorReview(snapshot, new Date());
 
   function renderItem(task: (typeof review.ready)[number], ready: boolean) {
@@ -14,6 +16,7 @@ export function IncubatorView() {
         <TaskCard
           task={task}
           selected={selectedTask?.id === task.id}
+          timeZone={settings.timeZone}
           onOpen={() => selectTask(task.id)}
           onComplete={() => completeTask(task.id)}
           onFocus={() => setFocusTask(task.id)}

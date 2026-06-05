@@ -15,7 +15,7 @@ Cloudflare Pages
 
 Dexie Cloud
   -> Authenticates by email OTP
-  -> Syncs IndexedDB data between signed-in browsers
+  -> Syncs task/project data and the single settings row between signed-in browsers
 ```
 
 There is no custom backend and no Cloudflare Worker in v1.
@@ -89,6 +89,8 @@ Open `http://127.0.0.1:5173`, use the top-bar account chip, and sign in with ema
 
 The sign-in action forces an initial pull from Dexie Cloud after login. The `Sync now` button forces a push of local edits and then a pull of remote edits, which gives a concrete checkpoint when testing multiple devices.
 
+Settings are stored in the synced `appSettings` table. Changing theme, timezone, active WIP limit, focus timer default, or start page on one signed-in browser should follow the same push/pull checkpoint as task edits. Without `VITE_DEXIE_CLOUD_DB_URL`, settings still persist in that browser only.
+
 ## Cloudflare Pages Setup
 
 In Cloudflare:
@@ -156,6 +158,7 @@ Run this after Cloudflare and Dexie Cloud are configured:
 - Confirm the task appears on the phone.
 - Edit that task on the phone and click `Sync now`.
 - Confirm the edit appears on the computer.
+- Change the active WIP limit or theme in `Settings`, click `Sync now`, and confirm the setting appears on the other signed-in device after sync.
 - Put the phone offline, create a task, bring the phone online, click `Sync now`, and confirm the computer receives the task.
 - Reload the installed phone app after one successful load while offline; the app shell should render and existing local task data should be visible from IndexedDB.
 
@@ -171,6 +174,7 @@ After first deployment:
 - Create a task on one browser.
 - Open another browser or device and sign in with the same email.
 - Confirm the new task appears.
+- Change a setting such as active WIP limit and confirm it syncs to the other signed-in browser after `Sync now`.
 - Turn network off, capture a task, turn network on, and click `Sync now`.
 - Confirm the task appears on the other signed-in browser.
 - JSON export still works.

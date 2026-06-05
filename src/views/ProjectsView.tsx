@@ -3,6 +3,7 @@ import { useState } from "react";
 import { getProjectHealth } from "../domain/rules";
 import type { AreaId, Project, ProjectStatus } from "../domain/types";
 import { useBrain } from "../store/BrainStore";
+import { useSettings } from "../store/SettingsStore";
 import { TaskCard } from "../components/TaskCard";
 
 const projectStatuses: ProjectStatus[] = ["active", "on_hold", "done", "canceled"];
@@ -19,6 +20,7 @@ function formFromProject(project: Project): ProjectForm {
 
 export function ProjectsView() {
   const { snapshot, createProject, updateProject, addTask, selectTask, completeTask, setFocusTask, updateTask, selectedTask } = useBrain();
+  const { settings } = useSettings();
   const [title, setTitle] = useState("");
   const [outcome, setOutcome] = useState("");
   const [areaId, setAreaId] = useState<AreaId>("work");
@@ -178,6 +180,7 @@ export function ProjectsView() {
                     key={task.id}
                     task={task}
                     selected={selectedTask?.id === task.id}
+                    timeZone={settings.timeZone}
                     onOpen={() => selectTask(task.id)}
                     onComplete={() => completeTask(task.id)}
                     onFocus={() => setFocusTask(task.id)}
